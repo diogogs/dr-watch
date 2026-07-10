@@ -13,8 +13,9 @@ Objetivo de carreira: preencher os dois gaps do portfólio que o energia-forecas
 React/Next a sério** (a metade full-stack do posicionamento). Prioridade: sistema honesto e
 em produção > demo vistosa. Part-time, ~2-3 semanas, AI-assisted assumido.
 
-> **Estado:** charter v0 (2026-07-10). Spikes dia-1 feitos; build ainda NÃO começou —
-> arranca depois da fase interview-proof do energia-forecast (drift a solo + estudo).
+> **Contexto multi-projeto:** ver `C:\dev\CLAUDE.md` (mapa-mestre do portfólio). O projeto
+> irmão energia-forecast vive em `C:\dev\energia-forecast` — os padrões de lá (ingestão
+> idempotente, `first_seen_at`, insert-only, ADR-013 sobre triggers) são a referência.
 
 ## Princípios (herdados do energia-forecast, adaptados)
 
