@@ -123,21 +123,32 @@ dr-watch/
 
 ## Estado atual
 
-**2026-07-10 — pré-arranque.** Feito: brainstorm + decisões (nome, temas, free-tier
-estrito); spikes dia-1 TODOS verdes (RSS ✓, PDFs/pypdf ✓, backfill → forward-only ✓, legal
-→ CDADC art. 8.º ✓); auditoria de capacidade das plataformas ✓ (incl. fix do keepalive/Neon
-no energia); este charter.
+**Última atualização:** 2026-07-10, fim do dia 1.
 
-### A seguir (quando o projeto arrancar)
-- [ ] Autor: escolher os 1-2 temas finais + validar o nome do domínio público do site.
-- [ ] Repo GitHub + scaffold (uv, ruff, mypy, pytest, CI) + migração inicial.
-- [ ] Ingestão RSS + PDFs com testes sobre fixtures reais (guardar os XMLs/PDFs de dias
-      reais como fixtures, incluindo um dia sem publicação — domingos!).
-- [ ] **Golden set**: autor etiqueta ~100 diplomas (usar o arquivo RSS acumulado entretanto).
-- [ ] Pipeline LLM + evals + digest + site.
+**Fundação de ingestão COMPLETA e autónoma.** Spikes dia-1 todos verdes (RSS ✓, PDFs ✓,
+backfill → forward-only ✓, legal → CDADC art. 8.º ✓) → repo público + CI (uv, ruff,
+mypy `--strict`, pytest) → **coletor RSS diário** a arquivar em `data/rss/` (2×/dia,
+last-capture-wins — o feed acresce durante o dia, validado no próprio dia 1 com um
+Suplemento publicado à tarde) → **parser RSS** (variante Suplemento tratada + regressão) →
+**extração de PDFs** (AES da INCM → `pypdf[crypto]`; headers de página; hifenização) →
+**Neon próprio** (projeto `dr-watch`, PG18, migração 0001: schemas raw/digest/evals/ops,
+`raw.gazette_item` upsert por `pdf_url` com `first_seen_at` intocável + `raw.act_text`
+insert-once) → **runner diário** validado local E no runner do GitHub (8/8 diplomas de
+2026-07-10 com texto, incl. Suplemento; re-run = 0 novos). Workflow `ingest.yml` com 2
+retry tickets de schedule (lição ADR-013 do energia; cron-job.org entra quando o digest
+tiver deadline). Secret `DATABASE_URL` configurado. **10 testes verdes, tudo sobre
+artefactos reais.**
 
-### Pré-arranque: acumular dados desde já (decisão pendente)
-O arquivo é forward-only ⇒ cada dia sem ingestão é um dia perdido para sempre. Opção barata
-a considerar ANTES do build: um mini-workflow (20 linhas) que guarda o XML do RSS diário num
-repo/storage desde já, para o golden set e o arquivo nascerem com semanas de dados. Custo:
-~zero. Decidir com o autor.
+Descobertas do dia 1 (todas viraram testes/decisões): suplementos publicados durante a
+tarde partem o formato do título; o feed acresce (coletor last-wins); PDFs vêm encriptados
+AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 confirmado).
+
+### A seguir (retomar aqui)
+- [ ] **CI de integração**: serviço Postgres no CI + testes de repositório (padrão sentinela
+      do energia) — o CI atual não exercita a BD.
+- [ ] **Golden set** (autor): esquema de etiquetas (temas v1: habitação, saúde, economia
+      + 1-2 a escolher) e etiquetar ~100 diplomas à medida que o arquivo cresce.
+- [ ] **Pipeline LLM**: abstração de provider (Gemini Flash + fallback Groq) + budget guard
+      → classify → summarize → verify. Evals primeiro (princípio 2).
+- [ ] **Digest + API + site Next.js** (Vercel).
+- [ ] Guardar fixture de um domingo (dia sem Série I) quando o coletor o apanhar.
