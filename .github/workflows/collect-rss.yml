@@ -1,0 +1,50 @@
+name: Collect daily RSS
+
+on:
+  schedule:
+    # The archive is forward-only: every uncaptured day is lost forever, so collection runs
+    # from day zero, long before the pipeline exists. The feed holds the current day all day,
+    # so GitHub's multi-hour scheduler delays (measured on energia-forecast, ADR-013 there)
+    # are harmless here — late capture is still same-day capture. Two entries as insurance.
+    - cron: "0 10 * * *"
+    - cron: "0 16 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect-rss
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Snapshot today's feeds
+        run: |
+          set -euo pipefail
+          DAY=$(date -u +%F)
+          mkdir -p data/rss
+          for serie in serie1 serie2; do
+            OUT="data/rss/${DAY}-${serie}.xml"
+            # LAST capture of the day wins: the feed accretes during the day (a supplement
+            # landed mid-afternoon on day one), so later snapshots supersede earlier ones.
+            curl -fsS --max-time 60 "https://files.diariodarepublica.pt/rss/${serie}.xml" -o "$OUT"
+            echo "captured ${OUT} ($(stat -c%s "$OUT") bytes)"
+          done
+
+      - name: Commit snapshots
+        run: |
+          set -euo pipefail
+          if git diff --quiet && [ -z "$(git status --porcelain data/rss)" ]; then
+            echo "nothing new to commit"
+            exit 0
+          fi
+          git config user.name "dr-watch collector"
+          git config user.email "actions@github.com"
+          git add data/rss
+          git commit -m "data: RSS snapshot $(date -u +%F)"
+          git push
