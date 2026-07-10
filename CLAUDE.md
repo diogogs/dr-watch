@@ -147,7 +147,12 @@ AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 conf
       repositório (first_seen_at imutável; act_text insert-once). 12 testes.
 - [ ] **Golden set** (autor): etiquetar ~100 diplomas com os temas v1 (habitação, saúde,
       economia, outros) à medida que o arquivo cresce.
-- [ ] **Pipeline LLM**: abstração de provider (Gemini Flash + fallback Groq) + budget guard
-      → classify → summarize → verify. Evals primeiro (princípio 2).
+- [x] **Pipeline LLM — plumbing + classify** ✅ — FallbackChain (Gemini pinado
+      `gemini-3.1-flash-lite` — o 2.5 está fechado a contas novas — + Groq opcional),
+      budget guard gasto ANTES da chamada, contrato pydantic do nosso lado. 1º run real:
+      8/8 diplomas classificados nos temas v1. Key SEMPRE em header (lição: query string
+      vaza em erros/logs). 18 testes (plumbing via fakes; CI sem keys).
+- [ ] **Pipeline LLM — summarize + verify** + persistência das classificações (migração
+      0002: tabelas digest) + runner do digest.
 - [ ] **Digest + API + site Next.js** (Vercel).
 - [ ] Guardar fixture de um domingo (dia sem Série I) quando o coletor o apanhar.
