@@ -50,9 +50,8 @@ não foi lida no spike).
 
 ## Temas v1 (âmbito deliberadamente pequeno)
 
-4-5 temas: **habitação, saúde, economia** (confirmados) + 1-2 a decidir pelo autor
-(candidatos: energia — sinergia com o outro projeto —, fiscalidade, justiça). Tudo o resto
-classifica como "outros" e aparece sem resumo dedicado na v1.
+**DECIDIDO (2026-07-10): habitação, saúde, economia.** Tudo o resto classifica como
+"outros" e aparece sem resumo dedicado na v1. Expandir temas é backlog pós-v1.
 
 ## Pipeline diário (alvo)
 
@@ -146,8 +145,8 @@ AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 conf
 ### A seguir (retomar aqui)
 - [x] **CI de integração** ✅ — serviço postgres:16 + `alembic upgrade head` + testes de
       repositório (first_seen_at imutável; act_text insert-once). 12 testes.
-- [ ] **Golden set** (autor): esquema de etiquetas (temas v1: habitação, saúde, economia
-      + 1-2 a escolher) e etiquetar ~100 diplomas à medida que o arquivo cresce.
+- [ ] **Golden set** (autor): etiquetar ~100 diplomas com os temas v1 (habitação, saúde,
+      economia, outros) à medida que o arquivo cresce.
 - [ ] **Pipeline LLM**: abstração de provider (Gemini Flash + fallback Groq) + budget guard
       → classify → summarize → verify. Evals primeiro (princípio 2).
 - [ ] **Digest + API + site Next.js** (Vercel).
