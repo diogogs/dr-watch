@@ -5,10 +5,14 @@ description = "Daily LLM digest of Portugal's official gazette (Diário da Repú
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.18.5",
     "httpx>=0.28",
+    "psycopg[binary]>=3.3.4",
+    "pydantic-settings>=2.14.2",
     # [crypto]: INCM publishes act PDFs AES-encrypted (empty user password, edit-protection),
     # so pypdf needs the cryptography backend just to read them. Found on the first clean env.
     "pypdf[crypto]>=5.1",
+    "sqlalchemy>=2.0.51",
 ]
 
 [dependency-groups]

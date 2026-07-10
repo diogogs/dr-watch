@@ -1,0 +1,30 @@
+name: Daily ingest
+
+on:
+  schedule:
+    # Two retry tickets against GitHub's scheduler delays (measured on energia-forecast:
+    # uniform multi-hour lag). Late ingestion is harmless today — ingestion is idempotent
+    # and there is no publication deadline until the digest pipeline ships; at that point
+    # the primary trigger moves to cron-job.org dispatch (ADR-013 lesson) like everything
+    # time-critical.
+    - cron: "30 10 * * *"
+    - cron: "30 16 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: daily-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Ingest today's gazette (feed + PDF texts)
+        run: uv run python -m src.ingestion.daily
