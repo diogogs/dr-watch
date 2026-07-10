@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "httpx>=0.28",
-    "pypdf>=5.1",
+    # [crypto]: INCM publishes act PDFs AES-encrypted (empty user password, edit-protection),
+    # so pypdf needs the cryptography backend just to read them. Found on the first clean env.
+    "pypdf[crypto]>=5.1",
 ]
 
 [dependency-groups]
