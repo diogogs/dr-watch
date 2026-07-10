@@ -36,3 +36,4 @@ files = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: needs a database (DATABASE_URL) with the schema migrated"]
