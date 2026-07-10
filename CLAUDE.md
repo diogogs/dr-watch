@@ -152,7 +152,11 @@ AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 conf
       budget guard gasto ANTES da chamada, contrato pydantic do nosso lado. 1º run real:
       8/8 diplomas classificados nos temas v1. Key SEMPRE em header (lição: query string
       vaza em erros/logs). 18 testes (plumbing via fakes; CI sem keys).
-- [ ] **Pipeline LLM — summarize + verify** + persistência das classificações (migração
-      0002: tabelas digest) + runner do digest.
+- [x] **Pipeline LLM — análise completa** ✅ — summarize (PT claro, contrato pydantic) +
+      verify determinístico (números do sumário têm de existir na fonte; custo zero de
+      requests) + `digest.act_analysis` insert-only com `prompt_version` na PK (migração
+      0002). Run real: 8/8 analisados, 0 flagged, re-run idempotente. 23 testes.
+- [ ] **Digest diário + evals persistidos + workflow** (ligar run_analysis ao ingest.yml).
+- [ ] **Site Next.js** (Vercel) — digest + arquivo + página de evals.
 - [ ] **Digest + API + site Next.js** (Vercel).
 - [ ] Guardar fixture de um domingo (dia sem Série I) quando o coletor o apanhar.
