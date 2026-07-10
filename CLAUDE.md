@@ -137,16 +137,15 @@ Suplemento publicado à tarde) → **parser RSS** (variante Suplemento tratada +
 insert-once) → **runner diário** validado local E no runner do GitHub (8/8 diplomas de
 2026-07-10 com texto, incl. Suplemento; re-run = 0 novos). Workflow `ingest.yml` com 2
 retry tickets de schedule (lição ADR-013 do energia; cron-job.org entra quando o digest
-tiver deadline). Secret `DATABASE_URL` configurado. **10 testes verdes, tudo sobre
-artefactos reais.**
+tiver deadline). Secret `DATABASE_URL` configurado. **12 testes verdes** (10 sobre artefactos reais + 2 de integração).
 
 Descobertas do dia 1 (todas viraram testes/decisões): suplementos publicados durante a
 tarde partem o formato do título; o feed acresce (coletor last-wins); PDFs vêm encriptados
 AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 confirmado).
 
 ### A seguir (retomar aqui)
-- [ ] **CI de integração**: serviço Postgres no CI + testes de repositório (padrão sentinela
-      do energia) — o CI atual não exercita a BD.
+- [x] **CI de integração** ✅ — serviço postgres:16 + `alembic upgrade head` + testes de
+      repositório (first_seen_at imutável; act_text insert-once). 12 testes.
 - [ ] **Golden set** (autor): esquema de etiquetas (temas v1: habitação, saúde, economia
       + 1-2 a escolher) e etiquetar ~100 diplomas à medida que o arquivo cresce.
 - [ ] **Pipeline LLM**: abstração de provider (Gemini Flash + fallback Groq) + budget guard
