@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime as dt
 
 from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db.base import Base
@@ -34,6 +35,33 @@ class GazetteItem(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     last_seen_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class ActAnalysis(Base):
+    """digest.act_analysis — the LLM's take on one act, INSERT-ONLY (charter principle 5).
+
+    Keyed by (pdf_url, prompt_version): re-running a day never rewrites a published analysis,
+    and a deliberate prompt upgrade creates NEW rows instead of silently editing history.
+    ``ungrounded_numbers`` is the deterministic verify step's output — numbers that appear in
+    the summary but not in the source; non-empty means the summary is flagged, not published.
+    """
+
+    __tablename__ = "act_analysis"
+    __table_args__ = {"schema": "digest"}  # noqa: RUF012 — SQLAlchemy config
+
+    pdf_url: Mapped[str] = mapped_column(
+        String, ForeignKey("raw.gazette_item.pdf_url"), primary_key=True
+    )
+    prompt_version: Mapped[str] = mapped_column(String(8), primary_key=True)
+
+    themes: Mapped[list[str]] = mapped_column(ARRAY(String(16)), nullable=False)
+    rationale: Mapped[str] = mapped_column(Text, nullable=False)
+    summary_plain: Mapped[str] = mapped_column(Text, nullable=False)
+    ungrounded_numbers: Mapped[list[str]] = mapped_column(ARRAY(String(32)), nullable=False)
+    model_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
 

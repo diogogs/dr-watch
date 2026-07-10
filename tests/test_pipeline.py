@@ -59,6 +59,16 @@ def test_budget_spends_before_the_call_and_exhausts() -> None:
     assert budget.remaining == 0
 
 
+def test_summarize_parses_and_enforces_min_length() -> None:
+    from src.pipeline.summarize import SummaryError, summarize_act
+
+    good = '{"summary": "O diploma cria um apoio à renda para famílias elegíveis."}'
+    result = summarize_act(FakeProvider(good), RequestBudget(10), "t", "s", "texto")
+    assert "apoio" in result.summary
+    with pytest.raises(SummaryError):  # too short to be a real summary
+        summarize_act(FakeProvider('{"summary": "curto"}'), RequestBudget(10), "t", "s", "x")
+
+
 def test_fallback_chain_uses_second_when_first_fails() -> None:
     primary = FakeProvider("", fail=True, name="primary")
     secondary = FakeProvider(GOOD, name="secondary")
