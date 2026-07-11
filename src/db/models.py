@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Date, DateTime, ForeignKey, Identity, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -60,6 +60,33 @@ class ActAnalysis(Base):
     rationale: Mapped[str] = mapped_column(Text, nullable=False)
     summary_plain: Mapped[str] = mapped_column(Text, nullable=False)
     ungrounded_numbers: Mapped[list[str]] = mapped_column(ARRAY(String(32)), nullable=False)
+    model_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class PipelineRun(Base):
+    """evals.pipeline_run — append-only log of every analysis run (the evals backbone).
+
+    One row per execution: what was queued, analysed, flagged by the grounding check,
+    deferred by the budget, failed hard — plus the citation check (do the official PDF
+    links behind this run's analyses actually resolve?). The public evals page derives
+    from these rows; nothing here is ever updated.
+    """
+
+    __tablename__ = "pipeline_run"
+    __table_args__ = {"schema": "evals"}  # noqa: RUF012 — SQLAlchemy config
+
+    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
+    prompt_version: Mapped[str] = mapped_column(String(8), nullable=False)
+    queued: Mapped[int] = mapped_column(Integer, nullable=False)
+    analysed: Mapped[int] = mapped_column(Integer, nullable=False)
+    flagged: Mapped[int] = mapped_column(Integer, nullable=False)
+    failed: Mapped[int] = mapped_column(Integer, nullable=False)
+    deferred: Mapped[int] = mapped_column(Integer, nullable=False)
+    citation_ok: Mapped[int] = mapped_column(Integer, nullable=False)
+    citation_total: Mapped[int] = mapped_column(Integer, nullable=False)
     model_name: Mapped[str] = mapped_column(String(64), nullable=False)
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()

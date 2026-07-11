@@ -15,8 +15,11 @@ import argparse
 import logging
 import sys
 
+import httpx
+
 from src.config import get_settings
 from src.db.engine import make_engine, make_session_factory
+from src.db.models import PipelineRun
 from src.db.repositories.analysis import acts_missing_analysis, insert_analysis
 from src.pipeline.budget import BudgetExhausted, RequestBudget
 from src.pipeline.classify import classify_act
@@ -29,6 +32,20 @@ logger = logging.getLogger("run_analysis")
 PROMPT_VERSION = "v0"  # bumping this deliberately re-analyses history into NEW rows
 
 
+def check_citations(urls: list[str]) -> tuple[int, int]:
+    """(ok, total): does each analysis' official-PDF citation still resolve? The citation IS
+    the product's trust anchor, so it gets verified on every run, not assumed."""
+    ok = 0
+    with httpx.Client(timeout=30) as client:
+        for url in urls:
+            try:
+                if client.head(url, follow_redirects=True).status_code == 200:
+                    ok += 1
+            except httpx.HTTPError:
+                logger.warning("citation did not resolve: %s", url)
+    return ok, len(urls)
+
+
 def run_analysis(max_requests: int = 100) -> dict[str, int]:
     settings = get_settings()
     provider = provider_from_settings(settings)
@@ -36,6 +53,7 @@ def run_analysis(max_requests: int = 100) -> dict[str, int]:
     engine = make_engine()
     factory = make_session_factory(engine)
     stats = {"queued": 0, "analysed": 0, "flagged": 0, "failed": 0, "deferred": 0}
+    analysed_urls: list[str] = []
 
     try:
         with factory() as session:
@@ -75,7 +93,27 @@ def run_analysis(max_requests: int = 100) -> dict[str, int]:
                 )
                 session.commit()
             stats["analysed"] += 1
+            analysed_urls.append(pdf_url)
             logger.info("%s -> %s", act_title, ",".join(classification.themes))
+
+        # Evals: citation check for this run's analyses + the append-only run record.
+        citation_ok, citation_total = check_citations(analysed_urls)
+        with factory() as session:
+            session.add(
+                PipelineRun(
+                    prompt_version=PROMPT_VERSION,
+                    queued=stats["queued"],
+                    analysed=stats["analysed"],
+                    flagged=stats["flagged"],
+                    failed=stats["failed"],
+                    deferred=stats["deferred"],
+                    citation_ok=citation_ok,
+                    citation_total=citation_total,
+                    model_name=provider.name,
+                )
+            )
+            session.commit()
+        logger.info("citations: %d/%d ok", citation_ok, citation_total)
     finally:
         engine.dispose()
 
