@@ -156,7 +156,11 @@ AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 conf
       verify determinístico (números do sumário têm de existir na fonte; custo zero de
       requests) + `digest.act_analysis` insert-only com `prompt_version` na PK (migração
       0002). Run real: 8/8 analisados, 0 flagged, re-run idempotente. 23 testes.
-- [ ] **Digest diário + evals persistidos + workflow** (ligar run_analysis ao ingest.yml).
+- [x] **Workflow diário completo** ✅ — `Daily pipeline` = ingest → analyse (secret
+      GEMINI_API_KEY configurado); validado no runner. Descoberta de fim de semana: em dias
+      sem edição o feed serve a EDIÇÃO ANTERIOR (sáb 07-11 → Série I de 07-10) — idempotência
+      trata; fixture em `data/rss/2026-07-11-serie1.xml`.
+- [ ] **Digest do dia + evals persistidos** (compor a vista diária; guardar métricas).
 - [ ] **Site Next.js** (Vercel) — digest + arquivo + página de evals.
 - [ ] **Digest + API + site Next.js** (Vercel).
-- [ ] Guardar fixture de um domingo (dia sem Série I) quando o coletor o apanhar.
+- [x] Fixture de dia-sem-edição capturada (sábado serve a edição anterior) ✅.
