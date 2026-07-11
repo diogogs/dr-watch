@@ -1,4 +1,4 @@
-name: Daily ingest
+name: Daily pipeline
 
 on:
   schedule:
@@ -16,10 +16,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  ingest:
+  pipeline:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -28,3 +29,5 @@ jobs:
       - run: uv sync --frozen
       - name: Ingest today's gazette (feed + PDF texts)
         run: uv run python -m src.ingestion.daily
+      - name: Analyse new acts (classify + summarise + verify)
+        run: uv run python -m src.pipeline.run_analysis
