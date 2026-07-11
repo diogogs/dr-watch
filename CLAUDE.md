@@ -160,7 +160,10 @@ AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 conf
       GEMINI_API_KEY configurado); validado no runner. Descoberta de fim de semana: em dias
       sem edição o feed serve a EDIÇÃO ANTERIOR (sáb 07-11 → Série I de 07-10) — idempotência
       trata; fixture em `data/rss/2026-07-11-serie1.xml`.
-- [ ] **Digest do dia + evals persistidos** (compor a vista diária; guardar métricas).
+- [x] **Digest + evals persistidos** ✅ — `evals.pipeline_run` (migração 0003, append-only:
+      cobertura, flags de grounding, citation check HEAD por run) + `show_digest` (o digest
+      é DERIVADO das análises insert-only; a query de composição é a que o site vai reusar).
+      1º digest composto (07-10, 8 diplomas) lê-se exatamente como o produto pretende.
 - [ ] **Site Next.js** (Vercel) — digest + arquivo + página de evals.
 - [ ] **Digest + API + site Next.js** (Vercel).
 - [x] Fixture de dia-sem-edição capturada (sábado serve a edição anterior) ✅.
