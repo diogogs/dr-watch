@@ -167,8 +167,8 @@ AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 conf
 - [x] **Site Next.js construído** ✅ — `web/`: digest temático com citações oficiais e
       avisos de flags, arquivo forward-only, `/precisao` (qualidade auto-medida, publicada
       sem edição). Acesso via role Postgres `web_ro` (só leitura, por GRANT). Build+smoke
-      validados localmente. **Falta: ligar ao Vercel (ação do autor)** — importar repo,
-      root directory `web`, env `DATABASE_URL` = valor de `DATABASE_URL_RO` do .env.
+      validados localmente. **LIVE em https://dr-watch-omega.vercel.app** (Vercel Hobby,
+      root `web`, env = role read-only; o subdomínio limpo estava tomado).
 - [x] **Resiliência 429** ✅ — free tiers limitam por MINUTO (visto no 1º dia autónomo,
       12 diplomas): retry com backoff no Gemini + pacing ~6s/diploma no runner.
 - [ ] **Digest + API + site Next.js** (Vercel).

@@ -7,8 +7,9 @@ PDF, and publishes a daily digest and a searchable archive. Its accuracy is meas
 continuously and published — citation validity, coverage, classification against a
 hand-labelled golden set.
 
-Status: pre-launch. The daily RSS collector is running (the archive is forward-only, so
-collection started before the build); the pipeline, evals and site come next. Design and
+Live at https://dr-watch-omega.vercel.app — the daily digest, the forward-only archive,
+and a public accuracy page where every pipeline run's self-measured quality is published
+unedited. Design and
 decisions live in [CLAUDE.md](CLAUDE.md) and `docs/decisions/`.
 
 By the author of [energia-forecast](https://github.com/diogogs/energia-forecast) — the same
