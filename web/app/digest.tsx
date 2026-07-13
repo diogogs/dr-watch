@@ -15,7 +15,8 @@ export function Digest({ date, entries }: { date: string; entries: DigestEntry[]
             <div className="theme-header">{THEME_LABEL[theme]}</div>
             {themed.map((e) => (
               <article className="entry" key={e.pdf_url}>
-                <h3>{e.act_title}</h3>
+                {e.headline && <div className="kicker">{e.act_title}</div>}
+                <h3>{e.headline ?? e.act_title}</h3>
                 <p>{e.summary_plain}</p>
                 {e.flagged && (
                   <div className="flag">

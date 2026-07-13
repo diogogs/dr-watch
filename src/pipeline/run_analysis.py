@@ -30,7 +30,7 @@ from src.pipeline.verify import ungrounded_numbers
 
 logger = logging.getLogger("run_analysis")
 
-PROMPT_VERSION = "v0"  # bumping this deliberately re-analyses history into NEW rows
+PROMPT_VERSION = "v1"  # bumping this deliberately re-analyses history into NEW rows
 
 # Pacing between acts (2 requests each): free tiers limit requests per MINUTE, and bursting
 # a whole issue in seconds earns 429s (observed 2026-07-13). ~12s/act ≈ 10 requests/minute.
@@ -82,7 +82,7 @@ def run_analysis(max_requests: int = 100) -> dict[str, int]:
                 continue
 
             source = f"{act_title}\n{summary_raw}\n{text}"
-            ungrounded = ungrounded_numbers(summary.summary, source)
+            ungrounded = ungrounded_numbers(f"{summary.headline}\n{summary.summary}", source)
             if ungrounded:
                 stats["flagged"] += 1
                 logger.warning("%s: ungrounded numbers %s — flagged", act_title, ungrounded)
@@ -94,6 +94,7 @@ def run_analysis(max_requests: int = 100) -> dict[str, int]:
                     prompt_version=PROMPT_VERSION,
                     themes=list(classification.themes),
                     rationale=classification.rationale,
+                    headline=summary.headline,
                     summary_plain=summary.summary,
                     ungrounded=ungrounded,
                     model_name=provider.name,

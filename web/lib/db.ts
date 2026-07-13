@@ -12,14 +12,38 @@ export const THEME_LABEL: Record<string, string> = {
   outros: "Outros",
 };
 
-const PROMPT_VERSION = "v0";
+const PROMPT_VERSION = "v1";
 
 export interface DigestEntry {
   act_title: string;
   themes: string[];
+  headline: string | null; // null on pre-v1 rows only; display falls back to act_title
   summary_plain: string;
   pdf_url: string;
   flagged: boolean;
+}
+
+// Normative weight of an act, from its official designation: acts that change the law
+// outrank recommendations, which outrank typo corrections. Mirrors act_rank in
+// src/pipeline/show_digest.py — keep the two in sync.
+const ACT_RANK: [string, number][] = [
+  ["lei orgânica", 0],
+  ["lei ", 0],
+  ["decreto-lei", 0],
+  ["decreto legislativo regional", 0],
+  ["decreto do presidente", 1],
+  ["decreto regulamentar", 1],
+  ["portaria", 1],
+  ["resolução do conselho de ministros", 2],
+  ["acórdão", 2],
+  ["resolução", 3],
+  ["declaração de retificação", 5],
+];
+
+export function actRank(actTitle: string): number {
+  const title = actTitle.toLowerCase();
+  for (const [prefix, rank] of ACT_RANK) if (title.startsWith(prefix)) return rank;
+  return 4;
 }
 
 export interface ArchiveDay {
@@ -54,6 +78,7 @@ export async function digestFor(date: string): Promise<DigestEntry[]> {
   const rows = (await sql`
     select g.act_title,
            a.themes,
+           a.headline,
            a.summary_plain,
            g.pdf_url,
            cardinality(a.ungrounded_numbers) > 0 as flagged
@@ -62,7 +87,12 @@ export async function digestFor(date: string): Promise<DigestEntry[]> {
     where g.pub_date = ${date} and a.prompt_version = ${PROMPT_VERSION}
   `) as DigestEntry[];
   const order = (e: DigestEntry) => THEME_ORDER.indexOf(e.themes[0] as never);
-  return rows.sort((x, y) => order(x) - order(y) || x.act_title.localeCompare(y.act_title));
+  return rows.sort(
+    (x, y) =>
+      order(x) - order(y) ||
+      actRank(x.act_title) - actRank(y.act_title) ||
+      x.act_title.localeCompare(y.act_title)
+  );
 }
 
 export async function archiveDays(): Promise<ArchiveDay[]> {

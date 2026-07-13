@@ -34,19 +34,49 @@ THEME_LABEL = {
 class DigestEntry:
     act_title: str
     themes: tuple[str, ...]
+    headline: str | None  # None on v0 rows only; display falls back to act_title
     summary_plain: str
     pdf_url: str
     flagged: bool  # ungrounded numbers present → shown with a warning, or held back
 
 
+# Normative weight of an act, from its official designation. Within a theme, acts that
+# change the law outrank recommendations, which outrank typo corrections — the digest reads
+# like a front page: most consequential first. Deterministic (title prefix), no LLM.
+# Mirrored in web/lib/db.ts (actRank) — keep the two in sync.
+_ACT_RANK: tuple[tuple[str, int], ...] = (
+    ("lei orgânica", 0),
+    ("lei ", 0),
+    ("decreto-lei", 0),
+    ("decreto legislativo regional", 0),
+    ("decreto do presidente", 1),
+    ("decreto regulamentar", 1),
+    ("portaria", 1),
+    ("resolução do conselho de ministros", 2),
+    ("acórdão", 2),
+    ("resolução", 3),
+    ("declaração de retificação", 5),
+)
+
+
+def act_rank(act_title: str) -> int:
+    title = act_title.casefold()
+    for prefix, rank in _ACT_RANK:
+        if title.startswith(prefix):
+            return rank
+    return 4  # unknown designations sort after known ones, before retifications
+
+
 def daily_digest(
     session: Session, pub_date: dt.date, prompt_version: str = PROMPT_VERSION
 ) -> list[DigestEntry]:
-    """A day's analysed acts, primary-theme ordered (habitação → saúde → economia → outros)."""
+    """A day's analysed acts: primary theme (habitação → saúde → economia → outros), then
+    normative weight within the theme."""
     stmt = (
         select(
             GazetteItem.act_title,
             ActAnalysis.themes,
+            ActAnalysis.headline,
             ActAnalysis.summary_plain,
             GazetteItem.pdf_url,
             ActAnalysis.ungrounded_numbers,
@@ -58,13 +88,17 @@ def daily_digest(
         DigestEntry(
             act_title=title,
             themes=tuple(themes),
+            headline=headline,
             summary_plain=summary,
             pdf_url=url,
             flagged=bool(ungrounded),
         )
-        for title, themes, summary, url, ungrounded in session.execute(stmt).all()
+        for title, themes, headline, summary, url, ungrounded in session.execute(stmt).all()
     ]
-    return sorted(entries, key=lambda e: (THEME_ORDER.index(e.themes[0]), e.act_title))
+    return sorted(
+        entries,
+        key=lambda e: (THEME_ORDER.index(e.themes[0]), act_rank(e.act_title), e.act_title),
+    )
 
 
 def main() -> None:
@@ -89,7 +123,8 @@ def main() -> None:
             print(f"── {THEME_LABEL[theme]} " + "─" * (60 - len(THEME_LABEL[theme])))
             for e in themed:
                 flag = "  [!] números por verificar" if e.flagged else ""
-                print(f"\n{e.act_title}{flag}")
+                print(f"\n{e.headline or e.act_title}{flag}")
+                print(f"  [{e.act_title}]")
                 print(f"  {e.summary_plain}")
                 print(f"  → {e.pdf_url}")
             print()

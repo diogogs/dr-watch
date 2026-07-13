@@ -127,6 +127,10 @@ dr-watch/
 diário, arquivo forward-only, `/precisao` (qualidade auto-medida, publicada sem edição).
 **1º dia 100% autónomo em 07-13: 12 diplomas** ingeridos, analisados e publicados sem
 intervenção (2 curados pelo run seguinte após 429s — a fila idempotente a pagar-se).
+**Prompt v1 (ADR-001):** cada card é uma "capa de jornal" — headline LLM em linguagem
+corrente (grounding de números cobre headline+resumo), designação oficial despromovida a
+kicker, ordenação por peso normativo (lei → regras → recomendações → retificações).
+Arquivo re-analisado sob v1 (20/20, 0 flagged, citações 20/20); site pinado em v1.
 
 ### Histórico (condensado — detalhe no `git log`)
 
@@ -146,8 +150,12 @@ intervenção (2 curados pelo run seguinte após 429s — a fila idempotente a p
 - Site Next.js (`web/`, UI em PT — produto para leitores portugueses): digest temático,
   arquivo, precisão; acesso via role Postgres `web_ro` (só leitura por GRANT); datas
   validadas (9999-99-99 dava 500). Vercel Hobby, root `web`; subdomínio limpo estava tomado.
-- 25+ ficheiros de código, 24 testes (unit + integração com Postgres no CI), migrações
-  0001-0003, tudo validado sobre artefactos reais.
+- 25+ ficheiros de código, 26 testes (unit + integração com Postgres no CI), migrações
+  0001-0004, tudo validado sobre artefactos reais.
+- Prompt v1 (07-13, ADR-001): headline em linguagem corrente no mesmo request do resumo
+  (budget inalterado); regra nova no resumo (abrir pela substância, não pela designação);
+  `act_rank` (Python) / `actRank` (TS) — manter em sync — ordena por peso normativo;
+  backfill do arquivo via bump de PROMPT_VERSION (insert-only: linhas v0 intactas).
 
 ### A seguir (retomar aqui)
 - [ ] **Golden set (autor):** etiquetar ~100 diplomas (habitação/saúde/economia/outros) à

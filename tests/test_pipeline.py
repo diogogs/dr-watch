@@ -59,14 +59,46 @@ def test_budget_spends_before_the_call_and_exhausts() -> None:
     assert budget.remaining == 0
 
 
-def test_summarize_parses_and_enforces_min_length() -> None:
+def test_summarize_parses_headline_and_summary() -> None:
+    from src.pipeline.summarize import summarize_act
+
+    good = (
+        '{"headline": "Famílias passam a ter apoio à renda",'
+        ' "summary": "O diploma cria um apoio à renda para famílias elegíveis."}'
+    )
+    result = summarize_act(FakeProvider(good), RequestBudget(10), "t", "s", "texto")
+    assert result.headline == "Famílias passam a ter apoio à renda"
+    assert "apoio" in result.summary
+
+
+def test_summarize_rejects_broken_contracts() -> None:
     from src.pipeline.summarize import SummaryError, summarize_act
 
-    good = '{"summary": "O diploma cria um apoio à renda para famílias elegíveis."}'
-    result = summarize_act(FakeProvider(good), RequestBudget(10), "t", "s", "texto")
-    assert "apoio" in result.summary
-    with pytest.raises(SummaryError):  # too short to be a real summary
-        summarize_act(FakeProvider('{"summary": "curto"}'), RequestBudget(10), "t", "s", "x")
+    headline = '"headline": "Famílias passam a ter apoio à renda"'
+    cases = [
+        f'{{{headline}, "summary": "curto"}}',  # summary too short to be real
+        '{"summary": "O diploma cria um apoio à renda para famílias elegíveis."}',  # no headline
+        f'{{{headline.replace("renda", "renda" * 40)}, "summary": "Um resumo suficientemente'
+        ' longo."}',  # a paragraph masquerading as a headline
+    ]
+    for payload in cases:
+        with pytest.raises(SummaryError):
+            summarize_act(FakeProvider(payload), RequestBudget(10), "t", "s", "x")
+
+
+def test_act_rank_orders_law_before_recommendation_before_retification() -> None:
+    from src.pipeline.show_digest import act_rank
+
+    ordered = [
+        "Decreto-Lei n.º 97/2026",
+        "Portaria n.º 296/2026/1",
+        "Resolução do Conselho de Ministros n.º 1/2026",
+        "Resolução da Assembleia da República n.º 190/2026",
+        "Declaração de Retificação n.º 26/2026/1",
+    ]
+    ranks = [act_rank(t) for t in ordered]
+    assert ranks == sorted(ranks)
+    assert act_rank("Coisa Nova n.º 1/2026") < act_rank("Declaração de Retificação n.º 2/2026")
 
 
 def test_fallback_chain_uses_second_when_first_fails() -> None:

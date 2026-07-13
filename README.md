@@ -2,8 +2,8 @@
 
 What did the Portuguese state decide today? A daily, autonomous LLM system over the
 Diário da República (Série I): every morning it ingests the official gazette, classifies
-each act by theme, summarizes it in plain language with mandatory citations to the official
-PDF, and publishes a daily digest and a searchable archive. Its accuracy is measured
+each act by theme, rewrites it as a plain-language headline and summary with mandatory
+citations to the official PDF, and publishes a daily digest and a searchable archive. Its accuracy is measured
 continuously and published — citation validity, coverage, classification against a
 hand-labelled golden set.
 

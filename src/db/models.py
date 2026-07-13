@@ -58,6 +58,8 @@ class ActAnalysis(Base):
 
     themes: Mapped[list[str]] = mapped_column(ARRAY(String(16)), nullable=False)
     rationale: Mapped[str] = mapped_column(Text, nullable=False)
+    # Nullable: v0 rows predate the headline (insert-only history is never backfilled).
+    headline: Mapped[str | None] = mapped_column(Text, nullable=True)
     summary_plain: Mapped[str] = mapped_column(Text, nullable=False)
     ungrounded_numbers: Mapped[list[str]] = mapped_column(ARRAY(String(32)), nullable=False)
     model_name: Mapped[str] = mapped_column(String(64), nullable=False)
