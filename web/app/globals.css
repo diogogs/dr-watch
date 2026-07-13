@@ -1,0 +1,201 @@
+/* dr-watch — sober, typography-first, the portfolio's navy identity. */
+
+:root {
+  --ink: #1e2a38;
+  --ink-secondary: #46536b;
+  --ink-muted: #8a94a3;
+  --accent: #2a5a8c;
+  --surface: #ffffff;
+  --surface-alt: #f3f6f9;
+  --line: #e2e6eb;
+  --warn: #9a6700;
+  --navy-1: #1e2a38;
+  --navy-2: #2a5a8c;
+  --max-width: 46rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 17px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+}
+
+/* header band */
+.site-header {
+  background: linear-gradient(135deg, var(--navy-1) 0%, var(--navy-2) 100%);
+  color: #fff;
+  padding: 1.2rem 0 1.4rem;
+}
+
+.site-header .inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.site-header .brand {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.site-header .brand small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: #c6d3e2;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 1.2rem;
+  font-size: 0.92rem;
+}
+
+.site-header nav a {
+  color: #dfe7f0;
+}
+
+/* digest */
+h1 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin: 2.2rem 0 0.2rem;
+}
+
+.subtitle {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.6rem;
+}
+
+.theme-header {
+  font-size: 0.8rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.35rem;
+  margin: 2.2rem 0 0.4rem;
+}
+
+.entry {
+  border-left: 3px solid var(--line);
+  padding: 0.6rem 0 0.6rem 1rem;
+  margin: 1rem 0;
+}
+
+.entry h3 {
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.entry p {
+  color: var(--ink-secondary);
+  margin: 0.35rem 0 0.45rem;
+}
+
+.entry .official {
+  font-size: 0.85rem;
+}
+
+.entry .flag {
+  font-size: 0.8rem;
+  color: var(--warn);
+}
+
+/* archive + accuracy */
+.day-list a {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.55rem 0.2rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.day-list a span {
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+.stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin: 1.4rem 0;
+}
+
+.stats div strong {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.stats div span {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+/* footer */
+.site-footer {
+  max-width: var(--max-width);
+  margin: 3rem auto 0;
+  padding: 1.6rem 1.25rem 2.5rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}

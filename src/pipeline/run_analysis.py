@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+import time
 
 import httpx
 
@@ -30,6 +31,10 @@ from src.pipeline.verify import ungrounded_numbers
 logger = logging.getLogger("run_analysis")
 
 PROMPT_VERSION = "v0"  # bumping this deliberately re-analyses history into NEW rows
+
+# Pacing between acts (2 requests each): free tiers limit requests per MINUTE, and bursting
+# a whole issue in seconds earns 429s (observed 2026-07-13). ~12s/act ≈ 10 requests/minute.
+THROTTLE_SECONDS = 6.0
 
 
 def check_citations(urls: list[str]) -> tuple[int, int]:
@@ -61,7 +66,9 @@ def run_analysis(max_requests: int = 100) -> dict[str, int]:
         stats["queued"] = len(queue)
         logger.info("provider=%s queue=%d budget=%d", provider.name, len(queue), max_requests)
 
-        for pdf_url, act_title, summary_raw, text in queue:
+        for i, (pdf_url, act_title, summary_raw, text) in enumerate(queue):
+            if i > 0:
+                time.sleep(THROTTLE_SECONDS)
             try:
                 classification = classify_act(provider, budget, act_title, summary_raw)
                 summary = summarize_act(provider, budget, act_title, summary_raw, text)

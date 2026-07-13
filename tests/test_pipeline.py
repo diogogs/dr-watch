@@ -83,3 +83,25 @@ def test_fallback_chain_reports_all_failures() -> None:
     )
     with pytest.raises(ProviderError, match=r"a: down.*b: down"):
         chain.complete_json("p", {})
+
+
+def test_gemini_retries_429_then_succeeds(monkeypatch: pytest.MonkeyPatch) -> None:
+    import httpx
+
+    from src.pipeline import providers as prov
+
+    sleeps: list[float] = []
+    monkeypatch.setattr(prov.time, "sleep", lambda s: sleeps.append(s))
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] < 3:  # two 429s, then success
+            return httpx.Response(429)
+        return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": GOOD}]}}]})
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    provider = prov.GeminiProvider("key", client=client)
+    assert provider.complete_json("p", {}) == GOOD
+    assert calls["n"] == 3
+    assert sleeps == [15.0, 30.0]  # exponential backoff between attempts
