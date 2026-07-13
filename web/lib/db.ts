@@ -187,6 +187,22 @@ export async function archiveDays(): Promise<ArchiveDay[]> {
   `) as ArchiveDay[];
 }
 
+export interface GoldenAccuracy {
+  n: number; // hand-labelled acts that have a current-version analysis
+  primary_ok: number; // model's primary theme == author's primary theme
+}
+
+export async function goldenAccuracy(): Promise<GoldenAccuracy> {
+  const rows = (await sql`
+    select count(*)::int as n,
+           count(*) filter (where a.themes[1] = g.themes[1])::int as primary_ok
+    from evals.golden_label g
+    join digest.act_analysis a
+      on a.pdf_url = g.pdf_url and a.prompt_version = ${PROMPT_VERSION}
+  `) as GoldenAccuracy[];
+  return rows[0] ?? { n: 0, primary_ok: 0 };
+}
+
 export async function pipelineRuns(limit = 30): Promise<PipelineRun[]> {
   return (await sql`
     select id, queued, analysed, flagged, failed, deferred,

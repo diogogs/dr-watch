@@ -120,6 +120,27 @@ class PipelineRun(Base):
     )
 
 
+class GoldenLabel(Base):
+    """evals.golden_label — the author's hand-labelled themes for one act (ground truth).
+
+    Labelled BLIND: the labelling tool never shows the model's classification, so the
+    golden set cannot inherit the model's mistakes (charter principle 2 — evals before
+    prompts). ``themes`` is ordered: the first element is the primary theme. One row per
+    act; re-labelling a mistake overwrites (this is eval input, not a published output).
+    """
+
+    __tablename__ = "golden_label"
+    __table_args__ = {"schema": "evals"}  # noqa: RUF012 — SQLAlchemy config
+
+    pdf_url: Mapped[str] = mapped_column(
+        String, ForeignKey("raw.gazette_item.pdf_url"), primary_key=True
+    )
+    themes: Mapped[list[str]] = mapped_column(ARRAY(String(16)), nullable=False)
+    labelled_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
 class ActText(Base):
     """raw.act_text — extracted, normalised text of an act's official PDF (immutable)."""
 

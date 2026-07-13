@@ -1,9 +1,12 @@
-import { pipelineRuns } from "@/lib/db";
+import { goldenAccuracy, pipelineRuns } from "@/lib/db";
 
 export const revalidate = 3600;
 
+// Below this many hand labels an accuracy percentage is noise, not a measurement.
+const GOLDEN_MIN = 10;
+
 export default async function Precisao() {
-  const runs = await pipelineRuns();
+  const [runs, golden] = await Promise.all([pipelineRuns(), goldenAccuracy()]);
   const analysed = runs.reduce((s, r) => s + r.analysed, 0);
   const flagged = runs.reduce((s, r) => s + r.flagged, 0);
   const citOk = runs.reduce((s, r) => s + r.citation_ok, 0);
@@ -31,14 +34,24 @@ export default async function Precisao() {
           <strong>{pct(citOk, citTotal)}</strong>
           <span>citações oficiais que resolvem</span>
         </div>
+        <div>
+          <strong>{golden.n >= GOLDEN_MIN ? pct(golden.primary_ok, golden.n) : "—"}</strong>
+          <span>
+            {golden.n >= GOLDEN_MIN
+              ? `tema principal correto vs conjunto etiquetado à mão (n=${golden.n})`
+              : `classificação vs golden set — em curso (${golden.n}/100 etiquetados)`}
+          </span>
+        </div>
       </div>
 
       <h2 className="theme-header">Como se mede</h2>
       <p style={{ color: "var(--ink-secondary)", margin: "0.6rem 0 1.4rem" }}>
-        Todos os números de cada resumo têm de existir no documento oficial (verificação
-        determinística — resumos que falham são assinalados, não escondidos). Todas as ligações
-        aos PDFs oficiais são testadas em cada execução. A exatidão da classificação temática
-        será medida contra um conjunto de teste etiquetado à mão, em preparação.
+        Todos os números de cada resumo e título têm de existir no documento oficial
+        (verificação determinística — resumos que falham são assinalados, não escondidos).
+        Todas as ligações aos PDFs oficiais são testadas em cada execução. A classificação
+        temática é comparada com um conjunto etiquetado à mão pelo autor, às cegas — a
+        ferramenta de etiquetagem nunca mostra a resposta do modelo; a percentagem só é
+        publicada a partir de {GOLDEN_MIN} etiquetas.
       </p>
 
       <h2 className="theme-header">Execuções recentes</h2>

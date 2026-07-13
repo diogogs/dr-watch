@@ -171,8 +171,11 @@ do próprio ato, nunca metáforas de tema.
   agrupados corretamente, dia 07-10 corretamente sem grupos.
 
 ### A seguir (retomar aqui)
-- [ ] **Golden set (autor):** etiquetar ~100 diplomas (habitação/saúde/economia/outros) à
-      medida que o arquivo cresce; só depois se afinam prompts (princípio 2).
+- [ ] **Golden set (autor):** etiquetar ~100 diplomas com a CLI cega
+      `uv run --env-file .env python -m src.evals.label` (ADR-006; letras h/s/e/o,
+      1ª = tema principal; t = excerto, k = saltar, q = sair; retomável). /precisao
+      publica a exatidão automaticamente a partir de 10 etiquetas. Só depois se afinam
+      prompts (princípio 2).
 - [ ] **Dispatch via cron-job.org** (opcional por agora — o schedule atrasado do GH serve
       enquanto o digest não tiver hora de publicação prometida).
 - [ ] **Verificação final dos termos do site do DR** antes de divulgar publicamente.
