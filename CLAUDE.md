@@ -123,53 +123,38 @@ dr-watch/
 
 ## Estado atual
 
-**Última atualização:** 2026-07-13. **1º dia 100% autónomo: 12 diplomas analisados sem intervenção** (2 curados pelo run seguinte após 429s — o desenho de fila idempotente a pagar-se).
+**Última atualização:** 2026-07-13. **LIVE: https://dr-watch-omega.vercel.app** — digest
+diário, arquivo forward-only, `/precisao` (qualidade auto-medida, publicada sem edição).
+**1º dia 100% autónomo em 07-13: 12 diplomas** ingeridos, analisados e publicados sem
+intervenção (2 curados pelo run seguinte após 429s — a fila idempotente a pagar-se).
 
-**Fundação de ingestão COMPLETA e autónoma.** Spikes dia-1 todos verdes (RSS ✓, PDFs ✓,
-backfill → forward-only ✓, legal → CDADC art. 8.º ✓) → repo público + CI (uv, ruff,
-mypy `--strict`, pytest) → **coletor RSS diário** a arquivar em `data/rss/` (2×/dia,
-last-capture-wins — o feed acresce durante o dia, validado no próprio dia 1 com um
-Suplemento publicado à tarde) → **parser RSS** (variante Suplemento tratada + regressão) →
-**extração de PDFs** (AES da INCM → `pypdf[crypto]`; headers de página; hifenização) →
-**Neon próprio** (projeto `dr-watch`, PG18, migração 0001: schemas raw/digest/evals/ops,
-`raw.gazette_item` upsert por `pdf_url` com `first_seen_at` intocável + `raw.act_text`
-insert-once) → **runner diário** validado local E no runner do GitHub (8/8 diplomas de
-2026-07-10 com texto, incl. Suplemento; re-run = 0 novos). Workflow `ingest.yml` com 2
-retry tickets de schedule (lição ADR-013 do energia; cron-job.org entra quando o digest
-tiver deadline). Secret `DATABASE_URL` configurado. **12 testes verdes** (10 sobre artefactos reais + 2 de integração).
+### Histórico (condensado — detalhe no `git log`)
 
-Descobertas do dia 1 (todas viraram testes/decisões): suplementos publicados durante a
-tarde partem o formato do título; o feed acresce (coletor last-wins); PDFs vêm encriptados
-AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 confirmado).
+- Dia 1 (07-10): spikes verdes (RSS ✓, PDFs AES→`pypdf[crypto]` ✓, backfill→forward-only,
+  legal→CDADC art. 8.º) → repo + CI → coletor RSS 2×/dia (last-wins: o feed acresce; em dias
+  sem edição serve a ANTERIOR) → parser (variante Suplemento) → extração PDFs → Neon próprio
+  (mig 0001) → runner diário idempotente validado no runner GH.
+- Pipeline LLM: FallbackChain (Gemini pinado `gemini-3.1-flash-lite` — o 2.5 está fechado a
+  contas novas — + Groq opcional), budget gasto ANTES da chamada, contrato pydantic nosso;
+  classify + summarize + verify determinístico de números (custo zero); `digest.act_analysis`
+  insert-only versionado por `prompt_version` (mig 0002).
+- Evals: `evals.pipeline_run` append-only (cobertura, flags, citation check HEAD, mig 0003);
+  digest é DERIVADO (query de composição partilhada com o site em `show_digest`).
+- Workflow `Daily pipeline` = ingest→analyse (secrets DATABASE_URL + GEMINI_API_KEY; a chave
+  Gemini viaja SEMPRE em header, nunca em URL). Resiliência 429: retry backoff 15/30/60s +
+  pacing 6s/diploma (free tiers limitam por MINUTO — visto ao vivo em 07-13).
+- Site Next.js (`web/`, UI em PT — produto para leitores portugueses): digest temático,
+  arquivo, precisão; acesso via role Postgres `web_ro` (só leitura por GRANT); datas
+  validadas (9999-99-99 dava 500). Vercel Hobby, root `web`; subdomínio limpo estava tomado.
+- 25+ ficheiros de código, 24 testes (unit + integração com Postgres no CI), migrações
+  0001-0003, tudo validado sobre artefactos reais.
 
 ### A seguir (retomar aqui)
-- [x] **CI de integração** ✅ — serviço postgres:16 + `alembic upgrade head` + testes de
-      repositório (first_seen_at imutável; act_text insert-once). 12 testes.
-- [ ] **Golden set** (autor): etiquetar ~100 diplomas com os temas v1 (habitação, saúde,
-      economia, outros) à medida que o arquivo cresce.
-- [x] **Pipeline LLM — plumbing + classify** ✅ — FallbackChain (Gemini pinado
-      `gemini-3.1-flash-lite` — o 2.5 está fechado a contas novas — + Groq opcional),
-      budget guard gasto ANTES da chamada, contrato pydantic do nosso lado. 1º run real:
-      8/8 diplomas classificados nos temas v1. Key SEMPRE em header (lição: query string
-      vaza em erros/logs). 18 testes (plumbing via fakes; CI sem keys).
-- [x] **Pipeline LLM — análise completa** ✅ — summarize (PT claro, contrato pydantic) +
-      verify determinístico (números do sumário têm de existir na fonte; custo zero de
-      requests) + `digest.act_analysis` insert-only com `prompt_version` na PK (migração
-      0002). Run real: 8/8 analisados, 0 flagged, re-run idempotente. 23 testes.
-- [x] **Workflow diário completo** ✅ — `Daily pipeline` = ingest → analyse (secret
-      GEMINI_API_KEY configurado); validado no runner. Descoberta de fim de semana: em dias
-      sem edição o feed serve a EDIÇÃO ANTERIOR (sáb 07-11 → Série I de 07-10) — idempotência
-      trata; fixture em `data/rss/2026-07-11-serie1.xml`.
-- [x] **Digest + evals persistidos** ✅ — `evals.pipeline_run` (migração 0003, append-only:
-      cobertura, flags de grounding, citation check HEAD por run) + `show_digest` (o digest
-      é DERIVADO das análises insert-only; a query de composição é a que o site vai reusar).
-      1º digest composto (07-10, 8 diplomas) lê-se exatamente como o produto pretende.
-- [x] **Site Next.js construído** ✅ — `web/`: digest temático com citações oficiais e
-      avisos de flags, arquivo forward-only, `/precisao` (qualidade auto-medida, publicada
-      sem edição). Acesso via role Postgres `web_ro` (só leitura, por GRANT). Build+smoke
-      validados localmente. **LIVE em https://dr-watch-omega.vercel.app** (Vercel Hobby,
-      root `web`, env = role read-only; o subdomínio limpo estava tomado).
-- [x] **Resiliência 429** ✅ — free tiers limitam por MINUTO (visto no 1º dia autónomo,
-      12 diplomas): retry com backoff no Gemini + pacing ~6s/diploma no runner.
-- [ ] **Digest + API + site Next.js** (Vercel).
-- [x] Fixture de dia-sem-edição capturada (sábado serve a edição anterior) ✅.
+- [ ] **Golden set (autor):** etiquetar ~100 diplomas (habitação/saúde/economia/outros) à
+      medida que o arquivo cresce; só depois se afinam prompts (princípio 2).
+- [ ] **Dispatch via cron-job.org** (opcional por agora — o schedule atrasado do GH serve
+      enquanto o digest não tiver hora de publicação prometida).
+- [ ] **Verificação final dos termos do site do DR** antes de divulgar publicamente.
+- [ ] **Write-up** ("Building an LLM system that grades itself") quando houver ~1-2 semanas
+      de digests + evals acumulados.
+- [ ] Backlog: faithfulness LLM-as-judge amostral, Série II, backfill histórico, domínio.
