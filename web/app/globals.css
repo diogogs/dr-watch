@@ -259,32 +259,6 @@ h1 {
   padding-top: 1rem;
 }
 
-/* photos: navy tint + slight desaturation unify the curated pool */
-.thumb {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  margin-bottom: 0.6rem;
-  background: var(--surface-alt);
-}
-
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  filter: saturate(0.82);
-}
-
-.thumb::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, rgba(30, 42, 56, 0.22), rgba(42, 90, 140, 0.08));
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-
 /* compact side list: typographic act-type stamp + kicker + headline; details expand */
 .compact-item {
   display: grid;
@@ -351,16 +325,6 @@ h1 {
   font-size: 0.9rem;
 }
 
-.credit-list {
-  list-style: none;
-  margin: 0.4rem 0 1rem;
-}
-
-.credit-list li {
-  padding: 0.3rem 0;
-  border-bottom: 1px solid var(--line);
-  font-size: 0.92rem;
-}
 
 .related {
   margin-top: 0.85rem;

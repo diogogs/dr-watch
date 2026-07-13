@@ -1,5 +1,4 @@
 import { DigestEntry, StoryGroup, THEME_LABEL, THEME_ORDER, actMonogram, actRank } from "@/lib/db";
-import { THEME_IMAGES } from "@/lib/images";
 import { formatDate } from "@/lib/format";
 
 // A story is one subject: a lead act rendered in full plus related acts as sub-entries.
@@ -32,17 +31,6 @@ function compose(entries: DigestEntry[], groups: StoryGroup[]): Story[] {
   return stories.sort((a, b) => byWeight(a.lead, b.lead));
 }
 
-// Images are a scarcity signal (ADR-004): the hero gets one; the first secondary gets one
-// only when its theme differs from the hero's (never two look-alikes side by side); the
-// catch-all theme "outros" is never pictured. Assignment cycles the theme's curated pool
-// by day-of-month so consecutive days vary, deterministically (no randomness on render).
-function themeImage(theme: string, date: string, offset = 0): string | null {
-  const pool = THEME_IMAGES[theme];
-  if (!pool || pool.length === 0) return null;
-  const day = Number(date.slice(8, 10)) || 0;
-  return pool[(day + offset) % pool.length].src;
-}
-
 export function Digest({
   date,
   entries,
@@ -62,12 +50,6 @@ export function Digest({
   const [hero, ...rest] = stories;
   const secondaries = rest.slice(0, 3);
   const side = rest.slice(3);
-
-  const heroTheme = hero?.lead.themes[0];
-  const heroImg = hero ? themeImage(heroTheme!, date) : null;
-  const secTheme = secondaries[0]?.lead.themes[0];
-  const secondaryImg =
-    secondaries.length > 0 && secTheme !== heroTheme ? themeImage(secTheme!, date, 1) : null;
 
   const counts = THEME_ORDER.map(
     (t) => [t, entries.filter((e) => e.themes[0] === t).length] as const
@@ -92,7 +74,6 @@ export function Digest({
         <div className="col-main">
           {hero && (
             <article className="story hero">
-              {heroImg && <Thumb src={heroImg} />}
               <Kicker e={hero.lead} />
               <h2>{hero.lead.headline ?? hero.lead.act_title}</h2>
               <p>{hero.lead.summary_plain}</p>
@@ -101,9 +82,8 @@ export function Digest({
               <Related story={hero} />
             </article>
           )}
-          {secondaries.map((s, i) => (
+          {secondaries.map((s) => (
             <article className="story secondary" key={s.lead.pdf_url}>
-              {i === 0 && secondaryImg && <Thumb src={secondaryImg} />}
               <Kicker e={s.lead} />
               <h3>{s.lead.headline ?? s.lead.act_title}</h3>
               <p>{s.lead.summary_plain}</p>
@@ -154,15 +134,6 @@ export function Digest({
         )}
       </div>
     </>
-  );
-}
-
-function Thumb({ src }: { src: string }) {
-  return (
-    <div className="thumb">
-      {/* decorative, theme-level illustration — not a photo of the act's subject */}
-      <img src={src} alt="" />
-    </div>
   );
 }
 

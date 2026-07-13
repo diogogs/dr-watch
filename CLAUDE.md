@@ -131,13 +131,14 @@ intervenção (2 curados pelo run seguinte após 429s — a fila idempotente a p
 corrente (grounding de números cobre headline+resumo), designação oficial despromovida a
 kicker, ordenação por peso normativo (lei → regras → recomendações → retificações).
 Arquivo re-analisado sob v1 (20/20, 0 flagged, citações 20/20); site pinado em v1.
-**Front page assimétrica com imagens curadas (ADR-002 + ADR-003):** três colunas tipo
-Observador — hero com foto grande, coluna média com secundária + lista compacta
-(thumb pequeno, `<details>` expande resumo), coluna direita só texto; agrupamento por
+**Front page tipográfica em 2 colunas (ADR-002…005):** manchete + até 3 secundárias
+completas na coluna principal, lateral «Mais nesta edição» com selos tipográficos do
+tipo de ato (DL/PORT/RAR/RET, cor do tema, `<details>` expande resumo); agrupamento por
 assunto (1 request/dia, `digest.day_grouping` append-only, validação determinística,
-fallback = ungrouped); fotos = pool curado do Wikimedia Commons por tema
-(`web/lib/images.ts` + `/creditos`), tinta navy a unificar; navegação: /tema/[tema],
-edição anterior/seguinte no fim do feed, OG image tipográfica via `next/og`.
+fallback = ungrouped); navegação: /tema/[tema], edição anterior/seguinte, OG `next/og`.
+**Fotografias: testadas e removidas (ADR-005)** — foto de tema colada a história
+específica = especificidade falsa (caso Sines×diplomatas); se voltarem, só derivadas
+do próprio ato, nunca metáforas de tema.
 
 ### Histórico (condensado — detalhe no `git log`)
 
