@@ -46,6 +46,29 @@ export function actRank(actTitle: string): number {
   return 4;
 }
 
+// Official-gazette shorthand for the act type — the compact list's typographic stamp.
+// Unlike a theme photo, this mark is informative: it says what the act IS.
+const ACT_MONOGRAM: [string, string][] = [
+  ["lei orgânica", "LO"],
+  ["lei ", "LEI"],
+  ["decreto-lei", "DL"],
+  ["decreto legislativo regional", "DLR"],
+  ["decreto do presidente", "DPR"],
+  ["decreto regulamentar", "DR"],
+  ["portaria", "PORT"],
+  ["resolução do conselho de ministros", "RCM"],
+  ["resolução da assembleia da república", "RAR"],
+  ["resolução da assembleia legislativa", "RAL"],
+  ["acórdão", "AC"],
+  ["declaração de retificação", "RET"],
+];
+
+export function actMonogram(actTitle: string): string {
+  const title = actTitle.toLowerCase();
+  for (const [prefix, monogram] of ACT_MONOGRAM) if (title.startsWith(prefix)) return monogram;
+  return "§";
+}
+
 export interface StoryGroup {
   label: string;
   pdf_urls: string[];

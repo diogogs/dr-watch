@@ -1,4 +1,4 @@
-import { DigestEntry, StoryGroup, THEME_LABEL, THEME_ORDER, actRank } from "@/lib/db";
+import { DigestEntry, StoryGroup, THEME_LABEL, THEME_ORDER, actMonogram, actRank } from "@/lib/db";
 import { THEME_IMAGES } from "@/lib/images";
 import { formatDate } from "@/lib/format";
 
@@ -32,17 +32,15 @@ function compose(entries: DigestEntry[], groups: StoryGroup[]): Story[] {
   return stories.sort((a, b) => byWeight(a.lead, b.lead));
 }
 
-// Deterministic image assignment: walk the day's image-bearing cards in display order,
-// cycling through each theme's curated pool so same-theme cards differ within the day.
-function imagePicker() {
-  const counters = new Map<string, number>();
-  return (theme: string): string | null => {
-    const pool = THEME_IMAGES[theme];
-    if (!pool || pool.length === 0) return null;
-    const i = counters.get(theme) ?? 0;
-    counters.set(theme, i + 1);
-    return pool[i % pool.length].src;
-  };
+// Images are a scarcity signal (ADR-004): the hero gets one; the first secondary gets one
+// only when its theme differs from the hero's (never two look-alikes side by side); the
+// catch-all theme "outros" is never pictured. Assignment cycles the theme's curated pool
+// by day-of-month so consecutive days vary, deterministically (no randomness on render).
+function themeImage(theme: string, date: string, offset = 0): string | null {
+  const pool = THEME_IMAGES[theme];
+  if (!pool || pool.length === 0) return null;
+  const day = Number(date.slice(8, 10)) || 0;
+  return pool[(day + offset) % pool.length].src;
 }
 
 export function Digest({
@@ -59,16 +57,17 @@ export function Digest({
   nextDate: string | null;
 }) {
   const stories = compose(entries, groups);
-  // Observador-style asymmetric front: hero (image) → mid column with one pictured
-  // secondary + a compact thumbnail list (the tail) → right column, text only.
-  const [hero, secondary, ...tail] = stories;
-  const nRight = Math.min(4, Math.ceil(tail.length / 2));
-  const right = tail.slice(0, nRight);
-  const compact = tail.slice(nRight);
-  const pick = imagePicker();
-  const heroImg = hero ? pick(hero.lead.themes[0]) : null;
-  const secondaryImg = secondary ? pick(secondary.lead.themes[0]) : null;
-  const compactImgs = compact.map((s) => pick(s.lead.themes[0]));
+  // Two-column front, tiers by normative weight: hero + up to three full secondaries in
+  // the main column; the tail as a compact, stamp-anchored list in the side column.
+  const [hero, ...rest] = stories;
+  const secondaries = rest.slice(0, 3);
+  const side = rest.slice(3);
+
+  const heroTheme = hero?.lead.themes[0];
+  const heroImg = hero ? themeImage(heroTheme!, date) : null;
+  const secTheme = secondaries[0]?.lead.themes[0];
+  const secondaryImg =
+    secondaries.length > 0 && secTheme !== heroTheme ? themeImage(secTheme!, date, 1) : null;
 
   const counts = THEME_ORDER.map(
     (t) => [t, entries.filter((e) => e.themes[0] === t).length] as const
@@ -89,8 +88,8 @@ export function Digest({
         ))}
       </div>
 
-      <div className="front">
-        <div className="col-left">
+      <div className={side.length > 0 ? "front" : "front front-single"}>
+        <div className="col-main">
           {hero && (
             <article className="story hero">
               {heroImg && <Thumb src={heroImg} />}
@@ -102,46 +101,9 @@ export function Digest({
               <Related story={hero} />
             </article>
           )}
-        </div>
-
-        <div className="col-mid">
-          {secondary && (
-            <article className="story secondary">
-              {secondaryImg && <Thumb src={secondaryImg} />}
-              <Kicker e={secondary.lead} />
-              <h3>{secondary.lead.headline ?? secondary.lead.act_title}</h3>
-              <p className="clamp">{secondary.lead.summary_plain}</p>
-              <Flag e={secondary.lead} />
-              <Official e={secondary.lead} />
-              <Related story={secondary} />
-            </article>
-          )}
-          {compact.length > 0 && (
-            <div className="compact-list">
-              {compact.map((s, i) => (
-                <article className="compact-item" key={s.lead.pdf_url}>
-                  {compactImgs[i] && <Thumb src={compactImgs[i]} small />}
-                  <details>
-                    <summary>
-                      <Kicker e={s.lead} />
-                      <span className="compact-headline">
-                        {s.lead.headline ?? s.lead.act_title}
-                      </span>
-                    </summary>
-                    <p>{s.lead.summary_plain}</p>
-                    <Flag e={s.lead} />
-                    <Official e={s.lead} />
-                    <Related story={s} />
-                  </details>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="col-right">
-          {right.map((s) => (
-            <article className="story text-story" key={s.lead.pdf_url}>
+          {secondaries.map((s, i) => (
+            <article className="story secondary" key={s.lead.pdf_url}>
+              {i === 0 && secondaryImg && <Thumb src={secondaryImg} />}
               <Kicker e={s.lead} />
               <h3>{s.lead.headline ?? s.lead.act_title}</h3>
               <p>{s.lead.summary_plain}</p>
@@ -151,6 +113,31 @@ export function Digest({
             </article>
           ))}
         </div>
+
+        {side.length > 0 && (
+          <div className="col-side">
+            <div className="side-title">Mais nesta edição</div>
+            {side.map((s) => (
+              <article className="compact-item" key={s.lead.pdf_url}>
+                <div className={`stamp t-${s.lead.themes[0]}`}>
+                  {actMonogram(s.lead.act_title)}
+                </div>
+                <details>
+                  <summary>
+                    <Kicker e={s.lead} />
+                    <span className="compact-headline">
+                      {s.lead.headline ?? s.lead.act_title}
+                    </span>
+                  </summary>
+                  <p>{s.lead.summary_plain}</p>
+                  <Flag e={s.lead} />
+                  <Official e={s.lead} />
+                  <Related story={s} />
+                </details>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="edition-nav">
@@ -170,11 +157,11 @@ export function Digest({
   );
 }
 
-function Thumb({ src, small = false }: { src: string; small?: boolean }) {
+function Thumb({ src }: { src: string }) {
   return (
-    <div className={small ? "thumb thumb-sm" : "thumb"}>
+    <div className="thumb">
       {/* decorative, theme-level illustration — not a photo of the act's subject */}
-      <img src={src} alt="" loading={small ? "lazy" : "eager"} />
+      <img src={src} alt="" />
     </div>
   );
 }
