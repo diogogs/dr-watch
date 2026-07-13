@@ -123,7 +123,7 @@ dr-watch/
 
 ## Estado atual
 
-**Última atualização:** 2026-07-10, fim do dia 1.
+**Última atualização:** 2026-07-13. **1º dia 100% autónomo: 12 diplomas analisados sem intervenção** (2 curados pelo run seguinte após 429s — o desenho de fila idempotente a pagar-se).
 
 **Fundação de ingestão COMPLETA e autónoma.** Spikes dia-1 todos verdes (RSS ✓, PDFs ✓,
 backfill → forward-only ✓, legal → CDADC art. 8.º ✓) → repo público + CI (uv, ruff,
@@ -164,6 +164,12 @@ AES com password vazia; Série II ≈ 35× o volume da Série I (âmbito v1 conf
       cobertura, flags de grounding, citation check HEAD por run) + `show_digest` (o digest
       é DERIVADO das análises insert-only; a query de composição é a que o site vai reusar).
       1º digest composto (07-10, 8 diplomas) lê-se exatamente como o produto pretende.
-- [ ] **Site Next.js** (Vercel) — digest + arquivo + página de evals.
+- [x] **Site Next.js construído** ✅ — `web/`: digest temático com citações oficiais e
+      avisos de flags, arquivo forward-only, `/precisao` (qualidade auto-medida, publicada
+      sem edição). Acesso via role Postgres `web_ro` (só leitura, por GRANT). Build+smoke
+      validados localmente. **Falta: ligar ao Vercel (ação do autor)** — importar repo,
+      root directory `web`, env `DATABASE_URL` = valor de `DATABASE_URL_RO` do .env.
+- [x] **Resiliência 429** ✅ — free tiers limitam por MINUTO (visto no 1º dia autónomo,
+      12 diplomas): retry com backoff no Gemini + pacing ~6s/diploma no runner.
 - [ ] **Digest + API + site Next.js** (Vercel).
 - [x] Fixture de dia-sem-edição capturada (sábado serve a edição anterior) ✅.
