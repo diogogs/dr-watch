@@ -5,6 +5,10 @@ is an HONEST PARTIAL result (logged, exit 0 — the next run continues where thi
 because the work queue is derived from what is missing). Per-act failures are isolated and
 surface through the exit code.
 
+After the per-act work, one grouping request per affected day clusters same-subject acts
+for presentation (see group_related.py). Grouping failures are logged and skipped — a day
+without a grouping row simply renders ungrouped.
+
 Usage:
     uv run --env-file .env python -m src.pipeline.run_analysis [--max-requests 100]
 """
@@ -17,14 +21,22 @@ import sys
 import time
 
 import httpx
+from sqlalchemy.orm import Session, sessionmaker
 
 from src.config import get_settings
 from src.db.engine import make_engine, make_session_factory
 from src.db.models import PipelineRun
-from src.db.repositories.analysis import acts_missing_analysis, insert_analysis
+from src.db.repositories.analysis import (
+    acts_for_grouping,
+    acts_missing_analysis,
+    analysed_days_without_grouping,
+    insert_analysis,
+    insert_day_grouping,
+)
 from src.pipeline.budget import BudgetExhausted, RequestBudget
 from src.pipeline.classify import classify_act
-from src.pipeline.providers import provider_from_settings
+from src.pipeline.group_related import group_acts
+from src.pipeline.providers import LlmProvider, provider_from_settings
 from src.pipeline.summarize import summarize_act
 from src.pipeline.verify import ungrounded_numbers
 
@@ -51,6 +63,52 @@ def check_citations(urls: list[str]) -> tuple[int, int]:
     return ok, len(urls)
 
 
+def group_days(factory: sessionmaker[Session], provider: LlmProvider, budget: RequestBudget) -> int:
+    """One grouping request per day still lacking a grouping row; returns days grouped.
+
+    Days whose acts were analysed in THIS run have no row yet, so they are always included —
+    and a day that gains late acts in a future run gets a fresh row then (append-only).
+    """
+    with factory() as session:
+        days = analysed_days_without_grouping(session, PROMPT_VERSION)
+    grouped = 0
+    for day in days:
+        with factory() as session:
+            acts = acts_for_grouping(session, day, PROMPT_VERSION)
+        pdf_urls = [pdf_url for pdf_url, _, _ in acts]
+        if len(acts) >= 2:
+            if grouped > 0:
+                time.sleep(THROTTLE_SECONDS)
+            try:
+                pairs = [(title, headline or title) for _, title, headline in acts]
+                groups = group_acts(provider, budget, pairs)
+            except BudgetExhausted:
+                logger.warning("budget exhausted — %d days left ungrouped", len(days) - grouped)
+                break
+            except Exception:  # includes GroupingError — an invalid grouping is never fatal
+                logger.exception("grouping failed for %s — day renders ungrouped", day)
+                continue
+            payload = [
+                {"label": g.label, "pdf_urls": [pdf_urls[i - 1] for i in g.member_ids]}
+                for g in groups
+            ]
+            model_name = provider.name
+        else:
+            payload, model_name = [], "deterministic:single-act-day"
+        with factory() as session:
+            insert_day_grouping(
+                session,
+                pub_date=day,
+                prompt_version=PROMPT_VERSION,
+                groups=payload,
+                model_name=model_name,
+            )
+            session.commit()
+        grouped += 1
+        logger.info("%s: %d group(s) of related acts", day, len(payload))
+    return grouped
+
+
 def run_analysis(max_requests: int = 100) -> dict[str, int]:
     settings = get_settings()
     provider = provider_from_settings(settings)
@@ -66,7 +124,7 @@ def run_analysis(max_requests: int = 100) -> dict[str, int]:
         stats["queued"] = len(queue)
         logger.info("provider=%s queue=%d budget=%d", provider.name, len(queue), max_requests)
 
-        for i, (pdf_url, act_title, summary_raw, text) in enumerate(queue):
+        for i, (pdf_url, act_title, summary_raw, text, _pub_date) in enumerate(queue):
             if i > 0:
                 time.sleep(THROTTLE_SECONDS)
             try:
@@ -103,6 +161,13 @@ def run_analysis(max_requests: int = 100) -> dict[str, int]:
             stats["analysed"] += 1
             analysed_urls.append(pdf_url)
             logger.info("%s -> %s", act_title, ",".join(classification.themes))
+
+        # Presentation grouping: one request per day that lacks a grouping row. Runs even
+        # when the analyse queue was empty (self-heals days whose grouping failed before).
+        try:
+            group_days(factory, provider, budget)
+        except Exception:
+            logger.exception("grouping phase failed — affected days render ungrouped")
 
         # Evals: citation check for this run's analyses + the append-only run record.
         citation_ok, citation_total = check_citations(analysed_urls)

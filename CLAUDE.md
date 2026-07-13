@@ -131,6 +131,11 @@ intervenção (2 curados pelo run seguinte após 429s — a fila idempotente a p
 corrente (grounding de números cobre headline+resumo), designação oficial despromovida a
 kicker, ordenação por peso normativo (lei → regras → recomendações → retificações).
 Arquivo re-analisado sob v1 (20/20, 0 flagged, citações 20/20); site pinado em v1.
+**Front page tipográfica + story grouping (ADR-002):** manchete (ato de maior peso do
+dia, serif 1.9rem) + grelha hairline + kickers com cor por tema + strip de contagens;
+agrupamento por assunto (1 request/dia, `digest.day_grouping` append-only, validação
+determinística, fallback = ungrouped); OG image tipográfica via `next/og`. Sem fotos —
+decisão deliberada (registo sóbrio; stock por tema repete e decora sem informar).
 
 ### Histórico (condensado — detalhe no `git log`)
 
@@ -156,6 +161,11 @@ Arquivo re-analisado sob v1 (20/20, 0 flagged, citações 20/20); site pinado em
   (budget inalterado); regra nova no resumo (abrir pela substância, não pela designação);
   `act_rank` (Python) / `actRank` (TS) — manter em sync — ordena por peso normativo;
   backfill do arquivo via bump de PROMPT_VERSION (insert-only: linhas v0 intactas).
+- Front page + grouping (07-13, ADR-002, mig 0005): `group_related.py` agrupa por assunto
+  com validação determinística (id inválido/duplicado ⇒ dia fica ungrouped — nunca parte o
+  digest); dias re-agrupados em linhas novas quando chegam atos tardios; site compõe story
+  cards em `digest.tsx` (`compose()`); 1º dia real: 188+189 (Defesa) e 190+191 (Igualdade)
+  agrupados corretamente, dia 07-10 corretamente sem grupos.
 
 ### A seguir (retomar aqui)
 - [ ] **Golden set (autor):** etiquetar ~100 diplomas (habitação/saúde/economia/outros) à

@@ -11,7 +11,24 @@
   --warn: #9a6700;
   --navy-1: #1e2a38;
   --navy-2: #2a5a8c;
-  --max-width: 46rem;
+  --max-width: 70rem;
+}
+
+/* theme colors — restrained, derived from the navy identity */
+.t-habitacao {
+  color: #a05b2c;
+}
+
+.t-saude {
+  color: #2e7d5b;
+}
+
+.t-economia {
+  color: #2a5a8c;
+}
+
+.t-outros {
+  color: #6b7686;
 }
 
 * {
@@ -89,7 +106,7 @@ main {
   color: #dfe7f0;
 }
 
-/* digest */
+/* digest — front-page grammar: lead story, hairline grid, colored theme kickers */
 h1 {
   font-size: 1.45rem;
   font-weight: 700;
@@ -99,7 +116,28 @@ h1 {
 .subtitle {
   color: var(--ink-muted);
   font-size: 0.9rem;
-  margin-bottom: 1.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.day-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.82rem;
+  color: var(--ink-secondary);
+  margin-bottom: 0.6rem;
+}
+
+.day-strip .dot {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 0.4rem;
 }
 
 .theme-header {
@@ -112,13 +150,22 @@ h1 {
   margin: 2.2rem 0 0.4rem;
 }
 
-.entry {
-  padding: 1.15rem 0 1.05rem;
-  border-bottom: 1px solid var(--line);
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(21rem, 100%), 1fr));
+  column-gap: 2.4rem;
 }
 
-.entry:last-of-type {
-  border-bottom: none;
+.entry {
+  padding: 1.15rem 0 1.2rem;
+  border-top: 1px solid var(--line);
+}
+
+.entry.hero {
+  border-top: none;
+  padding: 0.9rem 0 1.6rem;
+  border-bottom: 3px double var(--line);
+  margin-bottom: 0.2rem;
 }
 
 .entry .kicker {
@@ -129,12 +176,27 @@ h1 {
   margin-bottom: 0.3rem;
 }
 
+.entry .kicker .theme-tag {
+  font-weight: 700;
+}
+
+.entry h2,
 .entry h3 {
   font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.005em;
+}
+
+.entry.hero h2 {
+  font-size: 1.9rem;
+  line-height: 1.22;
+  max-width: 46rem;
+}
+
+.entry.hero p {
+  max-width: 46rem;
 }
 
 .entry p {
@@ -149,6 +211,44 @@ h1 {
 .entry .flag {
   font-size: 0.8rem;
   color: var(--warn);
+}
+
+.related {
+  margin-top: 0.85rem;
+  border-top: 1px dotted var(--line);
+  padding-top: 0.6rem;
+  max-width: 46rem;
+}
+
+.related-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.35rem;
+}
+
+.related-item {
+  margin: 0.45rem 0;
+}
+
+.related-item a {
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.related-item span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+/* narrow text pages (arquivo, precisão) inside the wide shell */
+.narrow {
+  max-width: 46rem;
 }
 
 /* archive + accuracy */

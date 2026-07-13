@@ -46,6 +46,11 @@ export function actRank(actTitle: string): number {
   return 4;
 }
 
+export interface StoryGroup {
+  label: string;
+  pdf_urls: string[];
+}
+
 export interface ArchiveDay {
   pub_date: string;
   n: number;
@@ -93,6 +98,18 @@ export async function digestFor(date: string): Promise<DigestEntry[]> {
       actRank(x.act_title) - actRank(y.act_title) ||
       x.act_title.localeCompare(y.act_title)
   );
+}
+
+export async function dayGrouping(date: string): Promise<StoryGroup[]> {
+  // Latest grouping version for the day; no row (or an empty list) renders ungrouped.
+  const rows = (await sql`
+    select groups
+    from digest.day_grouping
+    where pub_date = ${date} and prompt_version = ${PROMPT_VERSION}
+    order by id desc
+    limit 1
+  `) as { groups: StoryGroup[] }[];
+  return rows[0]?.groups ?? [];
 }
 
 export async function archiveDays(): Promise<ArchiveDay[]> {

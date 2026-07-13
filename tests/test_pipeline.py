@@ -86,6 +86,33 @@ def test_summarize_rejects_broken_contracts() -> None:
             summarize_act(FakeProvider(payload), RequestBudget(10), "t", "s", "x")
 
 
+def test_group_acts_parses_valid_grouping() -> None:
+    from src.pipeline.group_related import group_acts
+
+    payload = '{"groups": [{"label": "Igualdade no trabalho", "member_ids": [1, 3]}]}'
+    acts = [("Resolução n.º 190/2026", "h1"), ("Portaria n.º 296/2026", "h2"),
+            ("Resolução n.º 191/2026", "h3")]  # fmt: skip
+    groups = group_acts(FakeProvider(payload), RequestBudget(10), acts)
+    assert len(groups) == 1
+    assert groups[0].member_ids == [1, 3]
+
+
+def test_group_acts_rejects_broken_groupings() -> None:
+    from src.pipeline.group_related import GroupingError, group_acts
+
+    acts = [("t1", "h1"), ("t2", "h2")]
+    cases = [
+        '{"groups": [{"label": "xxx", "member_ids": [1]}]}',  # a group of one is not a group
+        '{"groups": [{"label": "xxx", "member_ids": [1, 5]}]}',  # unknown act id
+        '{"groups": [{"label": "xxx", "member_ids": [1, 2]},'
+        ' {"label": "yyy", "member_ids": [2, 1]}]}',  # an act cannot be in two groups
+        "not json at all",
+    ]
+    for payload in cases:
+        with pytest.raises(GroupingError):
+            group_acts(FakeProvider(payload), RequestBudget(10), acts)
+
+
 def test_act_rank_orders_law_before_recommendation_before_retification() -> None:
     from src.pipeline.show_digest import act_rank
 

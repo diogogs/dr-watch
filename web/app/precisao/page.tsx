@@ -11,7 +11,7 @@ export default async function Precisao() {
   const pct = (a: number, b: number) => (b === 0 ? "—" : `${Math.round((100 * a) / b)}%`);
 
   return (
-    <>
+    <div className="narrow">
       <h1>Quão fiável é isto?</h1>
       <p className="subtitle">
         Cada execução do sistema mede a sua própria qualidade e o resultado é publicado aqui,
@@ -68,6 +68,6 @@ export default async function Precisao() {
           ))}
         </tbody>
       </table>
-    </>
+    </div>
   );
 }
