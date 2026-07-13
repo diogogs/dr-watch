@@ -27,8 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <footer className="site-footer">
           Resumos gerados automaticamente e verificados por regras determinísticas; em caso de
-          dúvida, prevalece sempre o documento oficial, ligado em cada entrada. Fonte:{" "}
-          <a href="https://diariodarepublica.pt">Diário da República</a> ·{" "}
+          dúvida, prevalece sempre o documento oficial, ligado em cada entrada. As imagens são
+          ilustrações temáticas (<a href="/creditos">créditos</a>), não retratos dos diplomas.
+          Fonte: <a href="https://diariodarepublica.pt">Diário da República</a> ·{" "}
           <a href="https://github.com/diogogs/dr-watch">Como funciona (código aberto)</a> · Um
           projeto de <a href="https://diogogs.github.io">Diogo Guimarães Silva</a>.
         </footer>

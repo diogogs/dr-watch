@@ -100,6 +100,47 @@ export async function digestFor(date: string): Promise<DigestEntry[]> {
   );
 }
 
+export async function previousDigestDate(before: string): Promise<string | null> {
+  const rows = (await sql`
+    select max(g.pub_date)::text as d
+    from raw.gazette_item g
+    join digest.act_analysis a on a.pdf_url = g.pdf_url
+    where a.prompt_version = ${PROMPT_VERSION} and g.pub_date < ${before}
+  `) as { d: string | null }[];
+  return rows[0]?.d ?? null;
+}
+
+export async function nextDigestDate(after: string): Promise<string | null> {
+  const rows = (await sql`
+    select min(g.pub_date)::text as d
+    from raw.gazette_item g
+    join digest.act_analysis a on a.pdf_url = g.pdf_url
+    where a.prompt_version = ${PROMPT_VERSION} and g.pub_date > ${after}
+  `) as { d: string | null }[];
+  return rows[0]?.d ?? null;
+}
+
+export interface ThemeEntry extends DigestEntry {
+  pub_date: string;
+}
+
+export async function themeEntries(theme: string): Promise<ThemeEntry[]> {
+  const rows = (await sql`
+    select g.act_title,
+           a.themes,
+           a.headline,
+           a.summary_plain,
+           g.pdf_url,
+           cardinality(a.ungrounded_numbers) > 0 as flagged,
+           g.pub_date::text as pub_date
+    from raw.gazette_item g
+    join digest.act_analysis a on a.pdf_url = g.pdf_url
+    where a.prompt_version = ${PROMPT_VERSION} and ${theme} = any(a.themes)
+    order by g.pub_date desc, g.act_title
+  `) as ThemeEntry[];
+  return rows;
+}
+
 export async function dayGrouping(date: string): Promise<StoryGroup[]> {
   // Latest grouping version for the day; no row (or an empty list) renders ungrouped.
   const rows = (await sql`

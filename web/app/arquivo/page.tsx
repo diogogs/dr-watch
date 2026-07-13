@@ -1,5 +1,5 @@
 import { archiveDays } from "@/lib/db";
-import { formatDate } from "../digest";
+import { formatDate } from "@/lib/format";
 
 export const revalidate = 3600;
 

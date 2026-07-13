@@ -1,4 +1,4 @@
-import { dayGrouping, digestFor, latestDigestDate } from "@/lib/db";
+import { dayGrouping, digestFor, latestDigestDate, previousDigestDate } from "@/lib/db";
 import { Digest } from "./digest";
 
 export const revalidate = 3600; // the gazette changes once a day; ISR keeps Neon asleep
@@ -13,6 +13,12 @@ export default async function Home() {
       </>
     );
   }
-  const [entries, groups] = await Promise.all([digestFor(date), dayGrouping(date)]);
-  return <Digest date={date} entries={entries} groups={groups} />;
+  const [entries, groups, prevDate] = await Promise.all([
+    digestFor(date),
+    dayGrouping(date),
+    previousDigestDate(date),
+  ]);
+  return (
+    <Digest date={date} entries={entries} groups={groups} prevDate={prevDate} nextDate={null} />
+  );
 }

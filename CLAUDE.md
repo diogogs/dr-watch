@@ -131,11 +131,13 @@ intervenção (2 curados pelo run seguinte após 429s — a fila idempotente a p
 corrente (grounding de números cobre headline+resumo), designação oficial despromovida a
 kicker, ordenação por peso normativo (lei → regras → recomendações → retificações).
 Arquivo re-analisado sob v1 (20/20, 0 flagged, citações 20/20); site pinado em v1.
-**Front page tipográfica + story grouping (ADR-002):** manchete (ato de maior peso do
-dia, serif 1.9rem) + grelha hairline + kickers com cor por tema + strip de contagens;
-agrupamento por assunto (1 request/dia, `digest.day_grouping` append-only, validação
-determinística, fallback = ungrouped); OG image tipográfica via `next/og`. Sem fotos —
-decisão deliberada (registo sóbrio; stock por tema repete e decora sem informar).
+**Front page assimétrica com imagens curadas (ADR-002 + ADR-003):** três colunas tipo
+Observador — hero com foto grande, coluna média com secundária + lista compacta
+(thumb pequeno, `<details>` expande resumo), coluna direita só texto; agrupamento por
+assunto (1 request/dia, `digest.day_grouping` append-only, validação determinística,
+fallback = ungrouped); fotos = pool curado do Wikimedia Commons por tema
+(`web/lib/images.ts` + `/creditos`), tinta navy a unificar; navegação: /tema/[tema],
+edição anterior/seguinte no fim do feed, OG image tipográfica via `next/og`.
 
 ### Histórico (condensado — detalhe no `git log`)
 
