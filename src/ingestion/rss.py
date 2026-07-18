@@ -10,11 +10,14 @@ splitting, plain-language summary) belongs to the LLM pipeline, not the parser.
 from __future__ import annotations
 
 import datetime as dt
+import logging
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
 import httpx
+
+logger = logging.getLogger("rss")
 
 SERIE1_URL = "https://files.diariodarepublica.pt/rss/serie1.xml"
 SERIE2_URL = "https://files.diariodarepublica.pt/rss/serie2.xml"
@@ -47,7 +50,15 @@ class GazetteItem:
 
 
 def parse_feed(xml_text: str) -> list[GazetteItem]:
-    """Parse a DR daily feed into items. Raises RssParseError on unexpected shapes."""
+    """Parse a DR daily feed into items. Raises RssParseError on unexpected shapes.
+
+    Items whose link is not a PDF are QUARANTINED (warning log), never fatal: INCM emits
+    image-link items — annex images duplicating an act that also has its real PDF item
+    (Série II since day one; Série I first seen 2026-07-16, where one such item aborted
+    ingestion for three days), and occasionally an act whose only link is an image (DL
+    146/2026). The feed accretes across days, so a corrected link is picked up when it
+    appears; skipping keeps every valid act flowing meanwhile.
+    """
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError as exc:
@@ -66,7 +77,8 @@ def parse_feed(xml_text: str) -> list[GazetteItem]:
 
         link = (node.findtext("link") or "").strip()
         if not link.lower().endswith(".pdf"):
-            raise RssParseError(f"item link is not a PDF: {link!r}")
+            logger.warning("skipping non-PDF item link: %s -> %s", match["act"].strip(), link)
+            continue
 
         summary = " ".join((node.findtext("description") or "").split())
         items.append(

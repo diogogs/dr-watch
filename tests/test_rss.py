@@ -44,6 +44,25 @@ def test_first_item_fields() -> None:
     assert "\n" not in first.summary_raw
 
 
+def test_non_pdf_link_is_quarantined_not_fatal(caplog: pytest.LogCaptureFixture) -> None:
+    # INCM emits image-link items (annex images; first seen in Série I on 2026-07-16,
+    # where one aborted ingestion for three days). They are skipped loudly, never fatal.
+    xml = (
+        '<?xml version="1.0"?><rss version="2.0"><channel>'
+        "<item><title>Decreto-Lei n.º 146/2026  -  Diário da República n.º 137/2026, "
+        "Série I de 2026-07-17</title><description>d</description>"
+        "<link>https://files.diariodarepublica.pt/xternal/images/x.jpg</link></item>"
+        "<item><title>Portaria n.º 1/2026  -  Diário da República n.º 137/2026, "
+        "Série I de 2026-07-17</title><description>d</description>"
+        "<link>https://files.diariodarepublica.pt/1s/2026/07/13700/0000100002.pdf</link></item>"
+        "</channel></rss>"
+    )
+    with caplog.at_level("WARNING", logger="rss"):
+        items = parse_feed(xml)
+    assert [i.act_title for i in items] == ["Portaria n.º 1/2026"]
+    assert any("Decreto-Lei n.º 146/2026" in r.getMessage() for r in caplog.records)
+
+
 def test_empty_channel_yields_no_items() -> None:
     xml = '<?xml version="1.0"?><rss version="2.0"><channel><title>t</title></channel></rss>'
     assert parse_feed(xml) == []

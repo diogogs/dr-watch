@@ -5,13 +5,18 @@ once), so re-runs heal gaps — including supplements published later the same d
 isolation on PDF extraction: one bad PDF is counted and logged, never fatal to the run.
 
 Usage:
-    uv run --env-file .env python -m src.ingestion.daily
+    uv run --env-file .env python -m src.ingestion.daily [--feed-file data/rss/....xml]
+
+``--feed-file`` ingests a committed snapshot instead of the live feed — the recovery path
+when the live feed has moved past a day that failed (the snapshots exist for exactly this).
 """
 
 from __future__ import annotations
 
+import argparse
 import logging
 import sys
+from pathlib import Path
 
 import httpx
 
@@ -23,14 +28,14 @@ from src.ingestion.rss import SERIE1_URL, fetch_feed, parse_feed
 logger = logging.getLogger("daily")
 
 
-def run_daily() -> dict[str, int]:
+def run_daily(feed_file: Path | None = None) -> dict[str, int]:
     """Ingest today's announcements and any missing act texts. Returns run counters."""
     engine = make_engine()
     factory = make_session_factory(engine)
     stats = {"items_seen": 0, "texts_added": 0, "texts_failed": 0}
 
     try:
-        feed_xml = fetch_feed(SERIE1_URL)
+        feed_xml = feed_file.read_text(encoding="utf-8") if feed_file else fetch_feed(SERIE1_URL)
         items = parse_feed(feed_xml)
         stats["items_seen"] = len(items)
         with factory() as session:
@@ -62,8 +67,12 @@ def run_daily() -> dict[str, int]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Ingest the Série I feed (live or snapshot).")
+    parser.add_argument("--feed-file", type=Path, default=None)
+    args = parser.parse_args()
+
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    stats = run_daily()
+    stats = run_daily(args.feed_file)
     logger.info("done: %s", stats)
     if stats["texts_failed"]:
         sys.exit(1)  # honest failure: the cron must surface partial extraction
