@@ -123,7 +123,7 @@ dr-watch/
 
 ## Estado atual
 
-**Última atualização:** 2026-07-13. **LIVE: https://dr-watch-omega.vercel.app** — digest
+**Última atualização:** 2026-07-18. **LIVE: https://dr-watch-omega.vercel.app** — digest
 diário, arquivo forward-only, `/precisao` (qualidade auto-medida, publicada sem edição).
 **1º dia 100% autónomo em 07-13: 12 diplomas** ingeridos, analisados e publicados sem
 intervenção (2 curados pelo run seguinte após 429s — a fila idempotente a pagar-se).
@@ -139,6 +139,14 @@ fallback = ungrouped); navegação: /tema/[tema], edição anterior/seguinte, OG
 **Fotografias: testadas e removidas (ADR-005)** — foto de tema colada a história
 específica = especificidade falsa (caso Sines×diplomatas); se voltarem, só derivadas
 do próprio ato, nunca metáforas de tema.
+
+**Incidente 07-16→18 (resolvido 07-18):** a INCM passou a emitir itens com link-imagem
+no feed da Série I (34 anexos duplicados de uma portaria + o DL 146/2026 cujo único link
+é um JPG); o parser estrito abortava a ingestão inteira → 3 dias sem digest. Fix: itens
+não-PDF em quarentena com warning (nunca fatais) + `--feed-file` no runner para repor a
+partir dos snapshots do repo (a razão de eles existirem). Backfill 17/17, 0 flagged,
+citações 17/17. ⚠️ DL 146/2026 fica fora até a INCM corrigir o link (o feed acumula dias
+→ entra sozinho se corrigirem).
 
 ### Histórico (condensado — detalhe no `git log`)
 
