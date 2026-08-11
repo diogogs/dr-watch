@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+        <channel>
+        <title>Diário do Dia - Série I</title>
+        <link>
+            <![CDATA[ https://diariodarepublica.pt/dr]]>
+        </link>
+        <description>Diario do Dia - Série I - 2026-08-11</description>
+        <language>pt_PT</language>
+        <ttl>60</ttl>
+        <category>Diário do Dia - Série I</category>
+        <managingEditor>geral@diariodarepublica.pt</managingEditor>
+        <webMaster>geral@diariodarepublica.pt</webMaster>
+        <copyright>© 2008-2014 INCM SA</copyright>
+<item>
+        <title>Lei n.º 45/2026  -  Diário da República n.º 154/2026, Série I de 2026-08-11</title>
+    <description type="html">
+        <![CDATA[Assembleia da República Carreira especial de médico dentista no Serviço Nacional de Saúde.]]></description>
+    <link><![CDATA[https://files.diariodarepublica.pt/1s/2026/08/15400/0000200007.pdf]]></link>
+</item>
+<item>
+        <title>Portaria n.º 332/2026/1  -  Diário da República n.º 154/2026, Série I de 2026-08-11</title>
+    <description type="html">
+        <![CDATA[Saúde Aprova o Regulamento da Residência Farmacêutica.]]></description>
+    <link><![CDATA[https://files.diariodarepublica.pt/1s/2026/08/15400/0000800024.pdf]]></link>
+</item>
+<item>
+        <title>Declaração de Retificação n.º 30-A/2026/1  -  Diário da República n.º 154/2026, Suplemento, Série I de 2026-08-11</title>
+    <description type="html">
+        <![CDATA[Presidência do Conselho de Ministros - Secretaria-Geral do Governo Retifica a Portaria n.º 263/2026/1, de 12 de junho, publicada no Diário da República, 1.ª série, n.º 112, de 12 de junho de 2026.]]></description>
+    <link><![CDATA[https://files.diariodarepublica.pt/1s/2026/08/15401/0000200002.pdf]]></link>
+</item>
+
+</channel>
+</rss>
