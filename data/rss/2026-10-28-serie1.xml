@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+        <channel>
+        <title>Diário do Dia - Série I</title>
+        <link>
+            <![CDATA[ https://diariodarepublica.pt/dr]]>
+        </link>
+        <description>Diario do Dia - Série I - 2026-10-28</description>
+        <language>pt_PT</language>
+        <ttl>60</ttl>
+        <category>Diário do Dia - Série I</category>
+        <managingEditor>geral@diariodarepublica.pt</managingEditor>
+        <webMaster>geral@diariodarepublica.pt</webMaster>
+        <copyright>© 2008-2014 INCM SA</copyright>
+<item>
+        <title>Resolução da Assembleia da República n.º 281/2026  -  Diário da República n.º 209/2026, Série I de 2026-10-28</title>
+    <description type="html">
+        <![CDATA[Assembleia da República Recomenda ao Governo a criação de um observatório da Lagoa de Óbidos.]]></description>
+    <link><![CDATA[https://files.diariodarepublica.pt/1s/2026/10/20900/0000200004.pdf]]></link>
+</item>
+<item>
+        <title>Resolução da Assembleia da República n.º 282/2026  -  Diário da República n.º 209/2026, Série I de 2026-10-28</title>
+    <description type="html">
+        <![CDATA[Assembleia da República Programa «Parlamento Sénior».]]></description>
+    <link><![CDATA[https://files.diariodarepublica.pt/1s/2026/10/20900/0000500006.pdf]]></link>
+</item>
+
+</channel>
+</rss>
